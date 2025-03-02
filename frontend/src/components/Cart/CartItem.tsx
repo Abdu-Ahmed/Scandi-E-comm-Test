@@ -62,3 +62,4 @@ const CartItem: React.FC<CartItemComponentProps> = ({
 };
 
 export default CartItem;
+

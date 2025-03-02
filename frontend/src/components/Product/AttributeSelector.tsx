@@ -18,10 +18,10 @@ interface AttributeSelectorProps {
   selectedValue: string;
   onChange: (attributeName: string, value: string) => void;
   compact?: boolean;
-  disabled?: boolean;
+  disabled?: boolean; // added optional disabled prop
 }
 
-const toKebabCase = (str: string) => str.replace(/\s+/g, '-').toUpperCase();
+const toKebabCase = (str: string) => str.replace(/\s+/g, '-').toLowerCase();
 
 const AttributeSelector: React.FC<AttributeSelectorProps> = ({ 
   attribute, 
@@ -30,13 +30,9 @@ const AttributeSelector: React.FC<AttributeSelectorProps> = ({
   compact = false,
   disabled = false
 }) => {
-  const isCartItem = compact;
-  const attributeNameKebab = toKebabCase(attribute.name);
-  
-  // Generate correct test ID for the container
-  const attrTestId = attribute.name.toUpperCase() === 'color' 
-    ? `${isCartItem ? 'cart-item' : 'product'}-attribute-color` 
-    : `${isCartItem ? 'cart-item' : 'product'}-attribute-${attributeNameKebab}`;
+  const attrTestId = attribute.name.toLowerCase() === 'color' 
+    ? `${compact ? 'cart-item' : 'product'}-attribute-color`
+    : `${compact ? 'cart-item' : 'product'}-attribute-${toKebabCase(attribute.name)}`;
 
   return (
     <div 
@@ -49,26 +45,16 @@ const AttributeSelector: React.FC<AttributeSelectorProps> = ({
       <div className="flex flex-wrap gap-2">
         {attribute.items?.map((option) => {
           const isSelected = selectedValue === option.value;
-          let optionValueKebab;
-          
+          let testIdValue;
+
           if (attribute.name.toLowerCase() === 'color') {
-            optionValueKebab = `color-${option.value}`;
+            testIdValue = `color-${option.value}`;
           } else if (attribute.name.toLowerCase() === 'capacity') {
-            optionValueKebab = `capacity-${toKebabCase(option.displayValue)}`;
+            testIdValue = `capacity-${option.displayValue}`;
           } else {
-            optionValueKebab = `${attributeNameKebab}-${toKebabCase(option.displayValue)}`;
+            testIdValue = `${toKebabCase(attribute.name)}-${toKebabCase(option.displayValue)}`;
           }
-          
-          // Generate the correct test ID based on compact mode (cart item vs product) and selection state
-          let testId;
-          if (isCartItem) {
-            // Cart item format: cart-item-attribute-{attribute}-{option}[-selected]
-            testId = `cart-item-attribute-${optionValueKebab}${isSelected ? '-selected' : ''}`;
-          } else {
-            // Product page format: product-attribute-{attribute}-{option}
-            testId = `product-attribute-${optionValueKebab}`;
-          }
-          
+
           return (
             <button
               key={option.id}
@@ -77,18 +63,18 @@ const AttributeSelector: React.FC<AttributeSelectorProps> = ({
                   onChange(attribute.name, option.value);
                 }
               }}
-              data-testid={testId}
+              data-testid={`product-attribute-${testIdValue}`}
               className={`
                 flex items-center justify-center transition-all
                 ${
                   attribute.type === 'swatch'
                     ? `${compact ? 'w-6 h-6' : 'w-8 h-8'} border-2 ${isSelected ? 'border-primary scale-110' : 'border-gray-200'}`
                     : `${compact ? 'text-sm px-2 py-1' : 'px-3 py-1 text-sm'} border ${
-                      isSelected 
-                        ? 'bg-primary text-white border-primary' 
-                        : compact 
-                          ? 'bg-gray-50 text-gray-600 border-gray-200' 
-                          : 'bg-white text-gray-700 border-gray-300 hover:border-primary'
+                        isSelected 
+                          ? 'bg-primary text-white border-primary' 
+                          : compact 
+                            ? 'bg-gray-50 text-gray-600 border-gray-200' 
+                            : 'bg-white text-gray-700 border-gray-300 hover:border-primary'
                       }`
                 }
               `}
