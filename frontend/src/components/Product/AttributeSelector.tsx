@@ -21,7 +21,7 @@ interface AttributeSelectorProps {
   disabled?: boolean;
 }
 
-const toKebabCase = (str: string) => str.replace(/\s+/g, '-').toLowerCase();
+const toKebabCase = (str: string) => str.replace(/\s+/g, '-').toUpperCase();
 
 const AttributeSelector: React.FC<AttributeSelectorProps> = ({ 
   attribute, 
@@ -34,7 +34,7 @@ const AttributeSelector: React.FC<AttributeSelectorProps> = ({
   const attributeNameKebab = toKebabCase(attribute.name);
   
   // Generate correct test ID for the container
-  const attrTestId = attribute.name.toLowerCase() === 'color' 
+  const attrTestId = attribute.name.toUpperCase() === 'color' 
     ? `${isCartItem ? 'cart-item' : 'product'}-attribute-color` 
     : `${isCartItem ? 'cart-item' : 'product'}-attribute-${attributeNameKebab}`;
 
