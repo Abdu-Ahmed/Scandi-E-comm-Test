@@ -18,7 +18,7 @@ interface AttributeSelectorProps {
   selectedValue: string;
   onChange: (attributeName: string, value: string) => void;
   compact?: boolean;
-  disabled?: boolean; // added optional disabled prop
+  disabled?: boolean;
 }
 
 const toKebabCase = (str: string) => str.replace(/\s+/g, '-').toLowerCase();
@@ -30,9 +30,13 @@ const AttributeSelector: React.FC<AttributeSelectorProps> = ({
   compact = false,
   disabled = false
 }) => {
+  const isCartItem = compact;
+  const attributeNameKebab = toKebabCase(attribute.name);
+  
+  // Generate correct test ID for the container
   const attrTestId = attribute.name.toLowerCase() === 'color' 
-    ? `${compact ? 'cart-item' : 'product'}-attribute-color` 
-    : `${compact ? 'cart-item' : 'product'}-attribute-${toKebabCase(attribute.name)}`;
+    ? `${isCartItem ? 'cart-item' : 'product'}-attribute-color` 
+    : `${isCartItem ? 'cart-item' : 'product'}-attribute-${attributeNameKebab}`;
 
   return (
     <div 
@@ -45,14 +49,24 @@ const AttributeSelector: React.FC<AttributeSelectorProps> = ({
       <div className="flex flex-wrap gap-2">
         {attribute.items?.map((option) => {
           const isSelected = selectedValue === option.value;
-          let testIdValue;
+          let optionValueKebab;
           
           if (attribute.name.toLowerCase() === 'color') {
-            testIdValue = `color-${option.value}`;
+            optionValueKebab = `color-${option.value}`;
           } else if (attribute.name.toLowerCase() === 'capacity') {
-            testIdValue = `capacity-${option.displayValue}`;
+            optionValueKebab = `capacity-${toKebabCase(option.displayValue)}`;
           } else {
-            testIdValue = `${toKebabCase(attribute.name)}-${toKebabCase(option.displayValue)}`;
+            optionValueKebab = `${attributeNameKebab}-${toKebabCase(option.displayValue)}`;
+          }
+          
+          // Generate the correct test ID based on compact mode (cart item vs product) and selection state
+          let testId;
+          if (isCartItem) {
+            // Cart item format: cart-item-attribute-{attribute}-{option}[-selected]
+            testId = `cart-item-attribute-${optionValueKebab}${isSelected ? '-selected' : ''}`;
+          } else {
+            // Product page format: product-attribute-{attribute}-{option}
+            testId = `product-attribute-${optionValueKebab}`;
           }
           
           return (
@@ -63,7 +77,7 @@ const AttributeSelector: React.FC<AttributeSelectorProps> = ({
                   onChange(attribute.name, option.value);
                 }
               }}
-              data-testid={`product-attribute-${testIdValue}`}
+              data-testid={testId}
               className={`
                 flex items-center justify-center transition-all
                 ${
